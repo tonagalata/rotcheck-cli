@@ -1,0 +1,29 @@
+{
+  "name": "rotcheck",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Zero-dependency scanner for deprecated, abandoned, sabotaged and vulnerable packages in node_modules, with a local web dashboard.",
+  "license": "MIT",
+  "author": "Galata Tona",
+  "repository": "github:tonagalata/rotcheck-cli",
+  "type": "module",
+  "bin": {
+    "rotcheck": "rotcheck.mjs"
+  },
+  "files": [
+    "rotcheck.mjs",
+    "rotcheck.yml",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "security",
+    "dependencies",
+    "deprecated",
+    "vulnerabilities",
+    "supply-chain",
+    "npm"
+  ]
+}

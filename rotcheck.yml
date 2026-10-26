@@ -1,0 +1,44 @@
+# Save as .github/workflows/rotcheck.yml
+# Runs rotcheck weekly and on dependency changes, alongside Dependabot alerts.
+name: rotcheck
+
+on:
+  schedule:
+    - cron: '17 13 * * 1'   # Mondays 13:17 UTC
+  pull_request:
+    paths: ['package.json', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  ROTCHECK_VERSION: v1.0.0
+  ROTCHECK_SHA256: fd4dd89d8a743b9cc10a0990bf2abcd686b3cc960e5c3b252fdcf310cab94073
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies (no install scripts)
+        run: npm ci --ignore-scripts
+      - name: Download rotcheck and verify its checksum
+        run: |
+          curl -fsSLo "$RUNNER_TEMP/rotcheck.mjs" "https://github.com/tonagalata/rotcheck-cli/releases/download/$ROTCHECK_VERSION/rotcheck.mjs"
+          echo "$ROTCHECK_SHA256  $RUNNER_TEMP/rotcheck.mjs" | sha256sum -c -
+      - name: Run rotcheck
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # lifts the GitHub API rate limit for archived-repo checks
+        run: node "$RUNNER_TEMP/rotcheck.mjs" --prod --json rotcheck.json --fail-on critical
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rotcheck-report
+          path: |
+            rotcheck-report.html
+            rotcheck.json
